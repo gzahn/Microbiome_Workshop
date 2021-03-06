@@ -1,5 +1,7 @@
 # Workshop: Analyzing microbiome data
 
+#### From raw 16S reads to statistical analyses
+
 ### Preparation instructions
     - R / RStudio / packages
 
