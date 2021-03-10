@@ -64,47 +64,6 @@ saveRDS(out, "./output/trackreads.RDS")
 
 # Did any samples have NO reads pass the filtration step?
 
-
-
-
-
-# # 
-# # ## Fix numbers of reads mismatch
-# fns
-# 
-# fwd_lengths <- list()
-# x <- 1
-# for(i in fns){
-#   fwd_lengths[x] <- ShortRead::readFastq(i) %>% length()
-#   x <- x+1
-# }
-# 
-# 
-# rev_lengths <- list()
-# x <- 1
-# for(i in rns){
-#   rev_lengths[x] <- ShortRead::readFastq(i) %>% length()
-#   x <- x+1
-# }
-# 
-# df <- data.frame(fwd = unlist(fwd_lengths),
-#            rev = unlist(rev_lengths),
-#            fns = fns,
-#            rns = rns) %>%
-#   mutate(min=pmin(fwd,rev))
-# write_delim(df,"~/Desktop/GIT_REPOSITORIES/Microbiome_Workshop/data/minlengths.tsv",delim = "\t")
-# i <- 4
-# 
-# for(i in 1:nrow(df)){
-#   ShortRead::readFastq(fns[i])[1:df$min[i]] %>% ShortRead::writeFastq(file = file.path("./data/newlengths",basename(fns[i])),compress = FALSE)
-# }
-# 
-# for(i in 1:nrow(df)){
-#   ShortRead::readFastq(rns[i])[1:df$min[i]] %>% ShortRead::writeFastq(file = file.path("./data/newlengths",basename(rns[i])),compress = FALSE)
-# }
-# 
-
-
 length(fns);length(filts_f) # will be the same length if all samples had some passing reads
 length(rns);length(filts_r) # will be the same length if all samples had some passing reads
 

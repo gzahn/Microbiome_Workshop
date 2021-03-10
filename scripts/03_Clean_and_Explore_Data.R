@@ -5,6 +5,8 @@
 # Software versions:  R v 3.6.3
 #                     tidyverse v 1.3.0
 #                     phyloseq v 1.30.0
+#                     ShortRead v 1.44.3
+#                     Biostrings v 2.54.0
 # -----------------------------------------------------------------------------#
 
 start.time <- Sys.time()
@@ -12,6 +14,8 @@ start.time <- Sys.time()
 # PACKAGES, SCRIPTS, AND SETUP ####
 library(tidyverse); packageVersion("tidyverse")
 library(phyloseq); packageVersion("phyloseq")
+library(ShortRead); packageVersion("ShortRead")
+library(Biostrings); packageVersion("Biostrings")
 
 #################################################################################
 #                               Main workflow                                   #
