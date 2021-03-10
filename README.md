@@ -1,11 +1,17 @@
 # Workshop: Analyzing microbiome data
 
+#### From amplicons to hypothesis tests
+
+___
+
 ### Preparation instructions
     - R / RStudio / packages
 
 ### 16S Data set
 
-### Day 1 - From raw sequences to an ESV table (DADA2)
+Chagos coral microbiome data
 
-### Day 2 - Descriptive analyses and hypothesis testing (Phyloseq and vegan)
+### Day 1 - From raw sequences to an ESV table (DADA2 / decontam)
+
+### Day 2 - Descriptive analyses and hypothesis testing (Phyloseq / vegan / corncob)
 
