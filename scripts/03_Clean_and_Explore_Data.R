@@ -9,7 +9,11 @@
 #                     Biostrings v 2.54.0
 # -----------------------------------------------------------------------------#
 
-start.time <- Sys.time()
+#################################################################################
+#                               Main workflow                                   #
+#        Remove non-bacteria, chloroplast and mitochondrial sequences           #
+#                                                                               #
+#################################################################################
 
 # PACKAGES, SCRIPTS, AND SETUP ####
 library(tidyverse); packageVersion("tidyverse")
@@ -17,18 +21,9 @@ library(phyloseq); packageVersion("phyloseq")
 library(ShortRead); packageVersion("ShortRead")
 library(Biostrings); packageVersion("Biostrings")
 
-#################################################################################
-#                               Main workflow                                   #
-#        Remove non-bacteria, chloroplast and mitochondrial sequences           #
-#                                                                               #
-#################################################################################
-
-
-
 # load phyloseq object with phylogenetic tree ####
 
-ps <- readRDS("./output/ps_not-cleaned_w_tree.RDS")
-
+ps <- readRDS("./output/ps_not-cleaned_w_tree.RDS") # change to non-phylogeny stuff
 
 # Find and remove non-bacteria ####
 ps_nonbact <- subset_taxa(ps, Kingdom != "Bacteria")
@@ -46,6 +41,8 @@ ps_nonbact %>%
 
 # REMOVE NON-BACTERIA, CHLOROPLASTS, MITOCHONDRIA, and empty samples/taxa ####
 ps <- subset_taxa(ps, Kingdom == "Bacteria")
+tax <- tax_table(ps)
+tax@.Data %>% View
 ps <- subset_taxa(ps,Class != "Chloroplast")
 ps <- subset_taxa(ps, taxa_sums(ps) > 0)
 ps <- subset_samples(ps, sample_sums(ps) > 0)
@@ -57,7 +54,3 @@ saveRDS(seqs,"./output/16S_ASV_reference_sequences.RDS")
 
 # Save RDS object for cleaned up Phyloseq object
 saveRDS(ps, file = "./output/clean_phyloseq_object.RDS")
-
-end.time <- Sys.time()
-
-end.time - start.time

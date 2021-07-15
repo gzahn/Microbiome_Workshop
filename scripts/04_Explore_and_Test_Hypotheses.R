@@ -12,8 +12,6 @@
 #                     patchwork v 1.0.1
 # -----------------------------------------------------------------------------#
 
-start.time <- Sys.time()
-
 # PACKAGES, SCRIPTS, AND SETUP ####
 library(tidyverse); packageVersion("tidyverse")
 library(phyloseq); packageVersion("phyloseq")
@@ -48,7 +46,7 @@ nsamples(ps)
 
 # sample names
 sample_names(ps)
-
+rank_names(ps)
 # taxa names
 taxa_names(ps)
 
@@ -62,18 +60,18 @@ tax_table(ps)[,5] %>% table()
 tax_table(ps)[,6] %>% table()
 
 # sample metadata
-sample_data(ps) %>% head()
+sample_data(ps) %>% as_tibble()
 
 # ASV table
 otu_table(ps)
 
-# how many sequences observed in each sample
+# how many sequences observed in each sample?
 otu_table(ps) %>% rowSums()
 
-# how many times was each taxon observed
+# how many times was each taxon observed?
 otu_table(ps) %>% colSums()
 
-# how many different samples was each taxon found in
+# how many different samples was each taxon found in?
 asv <- otu_table(ps) %>% as("matrix") %>% as.data.frame() # convert to matrix before you can convert to data frame
 asv[asv>0] <- 1 # convert to presence/absence
 colSums(asv) # sum of presence (present = 1; absent = 0)
@@ -82,7 +80,7 @@ colSums(asv) # sum of presence (present = 1; absent = 0)
 widespread_seq <- names(asv)[which(colSums(asv) == max(colSums(asv)))] # this gives long sequence
 tax_table(ps)[widespread_seq,] # this pull that row from ASV table
 
-# what was most abundant (raw counts) taxon
+# what was most abundant (raw counts) taxon?
 abund_seq <- which(otu_table(ps) %>% colSums() == max(otu_table(ps) %>% colSums()))
 tax_table(ps)[abund_seq,]
 otu_table(ps)[,abund_seq]
@@ -90,13 +88,14 @@ otu_table(ps)[,abund_seq]
 # access the phylogenetic tree
 phy_tree(ps)
 plot_tree(ps,color="Class")
-
+# this tree sucks, but it's fast
+# explain where to update tree
 
 
 # Alpha diversity metrics ####
 
 # get table of alpha diversity measures
-estimate_richness(ps)
+estimate_richness(ps) # explain output
 names(sample_data(ps))
 
 # since we have no singletons, we cannot use Chao1 estimate!
@@ -104,7 +103,8 @@ names(sample_data(ps))
 plot_richness(ps, 
               measures = c("Observed","Shannon","Simpson"), 
               color = "Colony_Color", 
-              sortby = "Observed")
+              sortby = "Observed") +
+  theme(axis.text.x = element_blank())
 
 # plot, grouped by colony color with added boxplot
 plot_richness(ps, 
@@ -112,19 +112,12 @@ plot_richness(ps,
               measures = c("Observed","Shannon","Simpson"), 
               color = "Colony_Color", 
               sortby = "Observed") +
-  geom_boxplot(alpha = .5)
-
+  geom_boxplot(alpha = .5) +
+  theme_minimal()
+ggsave("./output/figs/alpha_diversity_boxplot.png",dpi=300,height = 4,width = 6)
 
 # transform raw counts to relative abundance ####
 ps_ra <- transform_sample_counts(ps, fun = function(x){x/sum(x)})
-
-
-
-
-
-# merge samples (using raw counts)
-
-# plot_bar
 
 # Beta-diversity ####
 
@@ -134,7 +127,7 @@ plot_ordination(ps_ra,dca,color = "Colony_Color")
 
 (
   ord1 <- plot_ordination(ps_ra,dca,color = "Colony_Color",shape="Island") +
-  geom_point(size=4) +
+  geom_point(size=4)  + theme_minimal() +
     theme(legend.position = "top") +
     labs(title = "DCA - Bray")
 )
@@ -144,7 +137,7 @@ nmds <- ordinate(ps_ra,method = "NMDS")
 
 (
 ord2 <- plot_ordination(ps_ra,nmds,color = "Colony_Color",shape="Island") +
-  geom_point(size=4) +
+  geom_point(size=4)  + theme_minimal() +
     theme(legend.position = "none") +
     labs(title = "NMDS - Bray")
 )
@@ -159,24 +152,24 @@ unifrac <- ordinate(ps_ra,method = "NMDS",distance = unifrac.dist)
 
 (
 ord3 <- plot_ordination(ps_ra,unifrac,color = "Colony_Color",shape="Island") +
-  geom_point(size=4) +
+  geom_point(size=4) + theme_minimal() +
     theme(legend.position = "none") +
     labs(title = "NMDS - Unifrac")
 )
 
 # combine all plots into one figure for comparison
 ord1 / ord2 / ord3
-
+ggsave("./output/figs/ordinations.png",dpi=300,width = 6,height = 8)
 
 # permanova ####
-
+?ordinate
 # pull out components
 asv <- otu_table(ps_ra) %>% as("matrix") %>% as.data.frame()
 meta <- sample_data(ps_ra) %>% as.data.frame()
 
 # run permanova model with colony_color and Island as predictors (with interaction term included)
 permanova.bray <- vegan::adonis(asv ~ meta$Colony_Color * meta$Island,method = "bray")
-permanova.bray
+permanova.bray %>% broom::tidy() %>% View
 
 # try with jaccard distance as well
 permanova.jaccard <- vegan::adonis(asv ~ meta$Colony_Color * meta$Island,method = "jaccard")
@@ -208,7 +201,7 @@ bbdml_obj <- multi_bbdml(da_analysis_colcolor,
                          mu_predictor = "Colony_Color",
                          phi_predictor = "Colony_Color",
                          taxlevels = 6)
-
+ps %>% sample_data()
 # another helper function found in the same file
 plot_multi_bbdml(bbdml_obj,
                  color="Colony_Color", 
@@ -219,5 +212,5 @@ plot_multi_bbdml(bbdml_obj,
 
 # view all the plots together using patchwork package
 (bbdml_plot_1 / bbdml_plot_2 / bbdml_plot_3) | (bbdml_plot_4 / bbdml_plot_5 / bbdml_plot_6)
-
+ggsave("./output/figs/bbdml_plot_all_sig_taxa.png",height = 6, width = 12)
 

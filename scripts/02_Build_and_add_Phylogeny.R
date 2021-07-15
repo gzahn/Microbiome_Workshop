@@ -12,7 +12,13 @@
 #                     seqinr v 3.6.1
 # -----------------------------------------------------------------------------#
 
-start.time <- Sys.time()
+#################################################################################
+#                               Main workflow                                   #
+# Perform multiple sequence alignment of all ASVs, build distance matrix,       # 
+# construct and refine a phylogenetic tree, add the tree to the phyloseq object #
+#           With larger data sets, this can be a long process...                #
+# Further, proper phylogenetics is beyond the scope of this tutorial.           #
+#################################################################################
 
 # Packages and functions ####
 library(tidyverse); packageVersion("tidyverse")
@@ -22,16 +28,6 @@ library(phangorn); packageVersion("phangorn")
 library(msa); packageVersion("msa")
 library(ape); packageVersion("ape")
 library(seqinr); packageVersion("seqinr")
-
-
-#################################################################################
-#                               Main workflow                                   #
-# Perform multiple sequence alignment of all ASVs, build distance matrix,       # 
-# construct and refine a phylogenetic tree, add the tree to the phyloseq object #
-#           With larger data sets, this can be a long process...                #
-# Further, proper phylogenetics is beyond the scope of this tutorial.           #
-#################################################################################
-
 
 # Read in phyloseq object from first script output ####
 ps <- readRDS("./output/ps_not-cleaned.RDS")
@@ -49,7 +45,6 @@ saveRDS(alignment,"./output/16S_dna_alignment_muscle.RDS")
 
 # Convert to phangorn format
 phang.align = as.phyDat(alignment, type = "DNA")
-# write.phyDat(phang.align,"./output/trees/16S_dna_alignment_muscle.nex",format="nexus")
 
 # distance - maximum likelihood ####
 dm <- dist.ml(phang.align)
@@ -83,6 +78,3 @@ ps2 <- phyloseq(tax_table(tax_table(ps)),
 saveRDS(ps2, "./output/ps_not-cleaned_w_tree.RDS")
 
 
-end.time <- Sys.time()
-
-end.time - start.time
