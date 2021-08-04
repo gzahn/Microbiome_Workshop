@@ -2,5 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-output/
 data/filtered/
+data/cutadapt/
+data/filtN/
+
