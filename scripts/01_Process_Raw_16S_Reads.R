@@ -149,8 +149,7 @@ seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE
 saveRDS(seqtab.nochim,"./output/seqtab.nochim.RDS")
 dim(seqtab.nochim)
 sum(seqtab.nochim)/sum(seqtab)
-?removeBimeraDenovo
-chimera.time <- Sys.time()
+
 
 # reassign "out" to remove any missing reads
 out = out[as.data.frame(out)$reads.out > 0,]
@@ -168,19 +167,17 @@ head(track)
 write.csv(track, file = "./output/16S_read_counts_at_each_step.csv", row.names = TRUE)
 
 
-readLines("./output/16S_read_counts_at_each_step.csv")
-
 # IMPORT METADATA ####
 meta <- read_csv("./metadata/chagos_metadata_clean.csv")
-row.names(meta) <- as.character(meta$Sample_ID)
+row.names(meta) <- as.character(meta$SampleNumber)
 
 # reorder metadata to match seqtab
 df <- data.frame(seqtab_rows=row.names(seqtab.nochim),
                  Sample_ID=row.names(seqtab.nochim))
 df2 <- left_join(meta,df,by="Sample_ID")
-row.names(df2) <- df2$SRA_Accession
+row.names(df2) <- df2$SampleNumber
 meta <- df2[row.names(seqtab.nochim),]
-row.names(meta) <- meta$SRA_Accession
+row.names(meta) <- meta$SampleNumber
 identical(row.names(meta),row.names(seqtab.nochim))
 
 
@@ -201,11 +198,10 @@ saveRDS(seqtab.nochim,"./output/seqtab.nochim.clean.RDS")
 
 # need to explain how to identify these in data set
 meta$Control <- meta$Host_ID == "Blank"
-meta <- meta[meta$SRA_Accession %in% row.names(seqtab.nochim),] 
+meta <- meta[meta$SampleNumber %in% row.names(seqtab.nochim),] 
 
 contams = isContaminant(seqtab.nochim, neg = meta$Control, normalize = TRUE)
-library(decontam)
-?isContaminant
+
 table(contams$contaminant) # how many taxa are contaminants?
 write.csv(contams, file = "./output/likely_contaminants.csv", row.names = TRUE)
 
@@ -240,12 +236,9 @@ head(taxa.print)
 otu <- otu_table(seqtab.nochim,taxa_are_rows = FALSE)
 tax <- tax_table(taxa)
 met <- sample_data(meta)
-row.names(met) <- meta$SRA_Accession
+row.names(met) <- meta$SampleNumber
 
 
 ps <- phyloseq(otu,met,tax)
 saveRDS(ps,"./output/ps_not-cleaned.RDS")
-
-
-
 

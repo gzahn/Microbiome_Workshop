@@ -78,7 +78,7 @@ colSums(asv) # sum of presence (present = 1; absent = 0)
 
 # what was the most widespread taxon (not abundance)
 widespread_seq <- names(asv)[which(colSums(asv) == max(colSums(asv)))] # this gives long sequence
-tax_table(ps)[widespread_seq,] # this pull that row from ASV table
+tax_table(ps)[widespread_seq,] # this pulls that row from ASV table
 
 # what was most abundant (raw counts) taxon?
 abund_seq <- which(otu_table(ps) %>% colSums() == max(otu_table(ps) %>% colSums()))
@@ -88,8 +88,9 @@ otu_table(ps)[,abund_seq]
 # access the phylogenetic tree
 phy_tree(ps)
 plot_tree(ps,color="Class")
-# this tree sucks, but it's fast
-# explain where to update tree
+# this tree sucks, but it was fast to build 
+# (you could spend more time refining and selecting a tree in script 02)
+
 
 
 # Alpha diversity metrics ####
@@ -102,15 +103,15 @@ names(sample_data(ps))
 # plot alpha diversity for every sample
 plot_richness(ps, 
               measures = c("Observed","Shannon","Simpson"), 
-              color = "Colony_Color", 
+              color = "Status", 
               sortby = "Observed") +
   theme(axis.text.x = element_blank())
 
-# plot, grouped by colony color with added boxplot
+# plot, grouped by Status with added boxplot
 plot_richness(ps, 
-              x = "Colony_Color",
+              x = "Status",
               measures = c("Observed","Shannon","Simpson"), 
-              color = "Colony_Color", 
+              color = "Status", 
               sortby = "Observed") +
   geom_boxplot(alpha = .5) +
   theme_minimal()
@@ -123,10 +124,10 @@ ps_ra <- transform_sample_counts(ps, fun = function(x){x/sum(x)})
 
 # Ordination
 dca <- ordinate(ps_ra)
-plot_ordination(ps_ra,dca,color = "Colony_Color") 
+plot_ordination(ps_ra,dca,color = "Status") 
 
 (
-  ord1 <- plot_ordination(ps_ra,dca,color = "Colony_Color",shape="Island") +
+  ord1 <- plot_ordination(ps_ra,dca,color = "Status",shape="Island") +
   geom_point(size=4)  + theme_minimal() +
     theme(legend.position = "top") +
     labs(title = "DCA - Bray")
@@ -136,7 +137,7 @@ plot_ordination(ps_ra,dca,color = "Colony_Color")
 nmds <- ordinate(ps_ra,method = "NMDS")
 
 (
-ord2 <- plot_ordination(ps_ra,nmds,color = "Colony_Color",shape="Island") +
+ord2 <- plot_ordination(ps_ra,nmds,color = "Status",shape="Island") +
   geom_point(size=4)  + theme_minimal() +
     theme(legend.position = "none") +
     labs(title = "NMDS - Bray")
@@ -145,13 +146,13 @@ ord2 <- plot_ordination(ps_ra,nmds,color = "Colony_Color",shape="Island") +
 
 # also try with unifrac distance, which takes phylogeny into account
 unifrac.dist <- UniFrac(ps_ra)
-betadisper(unifrac.dist,group = meta$Colony_Color) %>% plot() # plot beta-dispersion
+betadisper(unifrac.dist,group = meta$Status) %>% plot() # plot beta-dispersion
 
 
 unifrac <- ordinate(ps_ra,method = "NMDS",distance = unifrac.dist)
 
 (
-ord3 <- plot_ordination(ps_ra,unifrac,color = "Colony_Color",shape="Island") +
+ord3 <- plot_ordination(ps_ra,unifrac,color = "Status",shape="Island") +
   geom_point(size=4) + theme_minimal() +
     theme(legend.position = "none") +
     labs(title = "NMDS - Unifrac")
@@ -162,25 +163,30 @@ ord1 / ord2 / ord3
 ggsave("./output/figs/ordinations.png",dpi=300,width = 6,height = 8)
 
 # permanova ####
-?ordinate
+
 # pull out components
 asv <- otu_table(ps_ra) %>% as("matrix") %>% as.data.frame()
 meta <- sample_data(ps_ra) %>% as.data.frame()
 
-# run permanova model with colony_color and Island as predictors (with interaction term included)
-permanova.bray <- vegan::adonis(asv ~ meta$Colony_Color * meta$Island,method = "bray")
-permanova.bray %>% broom::tidy() %>% View
+# run permanova model with Status and Island as predictors (with interaction term included)
+permanova.bray <- vegan::adonis(asv ~ meta$Status * meta$Island,method = "bray")
+permanova.bray
 
 # try with jaccard distance as well
-permanova.jaccard <- vegan::adonis(asv ~ meta$Colony_Color * meta$Island,method = "jaccard")
+permanova.jaccard <- vegan::adonis(asv ~ meta$Status * meta$Island,method = "jaccard")
 permanova.jaccard
 
 
 # Differential abundance/dispersion tests ####
 
+# Clean up ASV names to show taxonomy
+ASV_names <- otu_table(ps) %>% colnames()
+ASV_taxa <- otu_to_taxonomy(ASV_names,ps,level = c("Phylum","Class","Order","Family","Genus"))
+
+
 # use non-transformed data!
 set.seed(123)
-da_analysis_colcolor <- differentialTest(formula = ~ Colony_Color, #abundance
+da_analysis_colcolor <- differentialTest(formula = ~ Status, #abundance
                                              phi.formula = ~ 1, #dispersion
                                              formula_null = ~ 1, #mean
                                              phi.formula_null = ~ 1,
@@ -188,7 +194,8 @@ da_analysis_colcolor <- differentialTest(formula = ~ Colony_Color, #abundance
                                              data = ps,
                                              fdr_cutoff = 0.05,
                                              full_output = TRUE)
-plot(da_analysis_colcolor)
+plot(da_analysis_colcolor) + 
+  theme(axis.text.y = element_text(size=1))
 
 
 # find the significant taxa
@@ -198,19 +205,18 @@ da_analysis_colcolor$significant_taxa %>% otu_to_taxonomy(data=ps)
 # This is a helper function I wrote. It's found in "scripts/bbdml_helper.R" 
 bbdml_obj <- multi_bbdml(da_analysis_colcolor,
                          ps_object = ps,
-                         mu_predictor = "Colony_Color",
-                         phi_predictor = "Colony_Color",
+                         mu_predictor = "Status",
+                         phi_predictor = "Status",
                          taxlevels = 6)
-ps %>% sample_data()
+
 # another helper function found in the same file
 plot_multi_bbdml(bbdml_obj,
-                 color="Colony_Color", 
+                 color="Status", 
                  pointsize = 3)
 
 
 # This saves a plot for each significant taxon in your environment called bbdml_plot_N (1 through number of sig. taxa)
 
 # view all the plots together using patchwork package
-(bbdml_plot_1 / bbdml_plot_2 / bbdml_plot_3) | (bbdml_plot_4 / bbdml_plot_5 / bbdml_plot_6)
+(bbdml_plot_1 / bbdml_plot_2 / bbdml_plot_3) | (bbdml_plot_4 / bbdml_plot_5 / bbdml_plot_6) | (bbdml_plot_7 / bbdml_plot_8 / bbdml_plot_9)
 ggsave("./output/figs/bbdml_plot_all_sig_taxa.png",height = 6, width = 12)
-

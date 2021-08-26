@@ -42,7 +42,7 @@ ps_nonbact %>%
 # REMOVE NON-BACTERIA, CHLOROPLASTS, MITOCHONDRIA, and empty samples/taxa ####
 ps <- subset_taxa(ps, Kingdom == "Bacteria")
 tax <- tax_table(ps)
-tax@.Data %>% View
+
 ps <- subset_taxa(ps,Class != "Chloroplast")
 ps <- subset_taxa(ps, taxa_sums(ps) > 0)
 ps <- subset_samples(ps, sample_sums(ps) > 0)
