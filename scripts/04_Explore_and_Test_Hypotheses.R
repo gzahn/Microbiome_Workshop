@@ -143,6 +143,9 @@ ord2 <- plot_ordination(ps_ra,nmds,color = "Status",shape="Island") +
     labs(title = "NMDS - Bray")
 )
 
+# pull out components
+asv <- otu_table(ps_ra) %>% as("matrix") %>% as.data.frame()
+meta <- sample_data(ps_ra) %>% as.data.frame()
 
 # also try with unifrac distance, which takes phylogeny into account
 unifrac.dist <- UniFrac(ps_ra)
@@ -163,10 +166,6 @@ ord1 / ord2 / ord3
 ggsave("./output/figs/ordinations.png",dpi=300,width = 6,height = 8)
 
 # permanova ####
-
-# pull out components
-asv <- otu_table(ps_ra) %>% as("matrix") %>% as.data.frame()
-meta <- sample_data(ps_ra) %>% as.data.frame()
 
 # run permanova model with Status and Island as predictors (with interaction term included)
 permanova.bray <- vegan::adonis(asv ~ meta$Status * meta$Island,method = "bray")
@@ -197,7 +196,7 @@ da_analysis_colcolor <- differentialTest(formula = ~ Status, #abundance
 plot(da_analysis_colcolor) + 
   theme(axis.text.y = element_text(size=1))
 
-
+tax_table(ps_ra)[da_analysis_colcolor$significant_taxa,c(5,6)] %>% unique
 # find the significant taxa
 da_analysis_colcolor$significant_taxa
 da_analysis_colcolor$significant_taxa %>% otu_to_taxonomy(data=ps)
@@ -208,12 +207,12 @@ bbdml_obj <- multi_bbdml(da_analysis_colcolor,
                          mu_predictor = "Status",
                          phi_predictor = "Status",
                          taxlevels = 6)
-
+multi_bbdml
 # another helper function found in the same file
 plot_multi_bbdml(bbdml_obj,
                  color="Status", 
                  pointsize = 3)
-
+plot_multi_bbdml
 
 # This saves a plot for each significant taxon in your environment called bbdml_plot_N (1 through number of sig. taxa)
 
