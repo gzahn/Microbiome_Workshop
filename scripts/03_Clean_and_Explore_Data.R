@@ -25,7 +25,7 @@ library(Biostrings); packageVersion("Biostrings")
 
 ps <- readRDS("./output/ps_not-cleaned_w_tree.RDS") # change to non-phylogeny stuff
 
-# Find and remove non-bacteria ####
+# Find non-bacteria ####
 ps_nonbact <- subset_taxa(ps, Kingdom != "Bacteria")
 
 # quick plot to look at kingdom-level taxonomy
@@ -54,3 +54,4 @@ saveRDS(seqs,"./output/16S_ASV_reference_sequences.RDS")
 
 # Save RDS object for cleaned up Phyloseq object
 saveRDS(ps, file = "./output/clean_phyloseq_object.RDS")
+ps

@@ -30,12 +30,11 @@ library(Biostrings); packageVersion("Biostrings")
 library(patchwork); packageVersion("patchwork")
 
 
-
 # PARSE FILE PATHS ####
 
 # File parsing - 
 
-path <- "./data/filtN" # CHANGE to the directory containing your demultiplexed fastq files when using your own data
+path <- "./data/filtN/" # CHANGE to the directory containing your demultiplexed fastq files when using your own data
 filtpath <- file.path(path, "filtered") # Filtered files go into the filtered/ subdirectory
 if(!file_test("-d", filtpath)) dir.create(filtpath) # make directory for filtered fqs if not already present
 
@@ -55,8 +54,10 @@ sample.names <- unlist(map(strsplit(basename(fns), "_"), 1)) # this pulls out ju
 # visualize a couple of fwd read quality profiles to help select reasonable filtration parameters
 # you can select any number of files here...
 # as-is, this just shows the Fwd and Rev quality profiles for the 1st and 2nd files
-p1 <- plotQualityProfile(fns[1:2]) + ggtitle("Example forward reads")
-p2 <- plotQualityProfile(rns[1:2]) + ggtitle("Example reverse reads")
+
+
+p1 <- plotQualityProfile(fns[1]) + ggtitle("Example forward reads")
+p2 <- plotQualityProfile(rns[1]) + ggtitle("Example reverse reads")
 
 # display and save the plots
 p1 / p2
@@ -241,4 +242,4 @@ row.names(met) <- meta$SampleNumber
 
 ps <- phyloseq(otu,met,tax)
 saveRDS(ps,"./output/ps_not-cleaned.RDS")
-
+ps
