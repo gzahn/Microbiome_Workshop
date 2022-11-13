@@ -168,11 +168,11 @@ ggsave("./output/figs/ordinations.png",dpi=300,width = 6,height = 8)
 # permanova ####
 
 # run permanova model with Status and Island as predictors (with interaction term included)
-permanova.bray <- vegan::adonis(asv ~ meta$Status * meta$Island,method = "bray")
+permanova.bray <- vegan::adonis2(asv ~ meta$Status * meta$Island,method = "bray")
 permanova.bray
 
 # try with jaccard distance as well
-permanova.jaccard <- vegan::adonis(asv ~ meta$Status * meta$Island,method = "jaccard")
+permanova.jaccard <- vegan::adonis2(asv ~ meta$Status * meta$Island,method = "jaccard")
 permanova.jaccard
 
 
@@ -196,7 +196,6 @@ da_analysis_colcolor <- differentialTest(formula = ~ Status, #abundance
 plot(da_analysis_colcolor) + 
   theme(axis.text.y = element_text(size=1))
 
-tax_table(ps_ra)[da_analysis_colcolor$significant_taxa,c(5,6)] %>% unique
 # find the significant taxa
 da_analysis_colcolor$significant_taxa
 da_analysis_colcolor$significant_taxa %>% otu_to_taxonomy(data=ps)
@@ -207,7 +206,8 @@ bbdml_obj <- multi_bbdml(da_analysis_colcolor,
                          mu_predictor = "Status",
                          phi_predictor = "Status",
                          taxlevels = 6)
-multi_bbdml
+
+
 # another helper function found in the same file
 plot_multi_bbdml(bbdml_obj,
                  color="Status", 
@@ -217,5 +217,5 @@ plot_multi_bbdml
 # This saves a plot for each significant taxon in your environment called bbdml_plot_N (1 through number of sig. taxa)
 
 # view all the plots together using patchwork package
-(bbdml_plot_1 / bbdml_plot_2 / bbdml_plot_3) | (bbdml_plot_4 / bbdml_plot_5 / bbdml_plot_6) | (bbdml_plot_7 / bbdml_plot_8 / bbdml_plot_9)
+(bbdml_plot_1 / bbdml_plot_2 / bbdml_plot_3) | (bbdml_plot_4 / bbdml_plot_5 / bbdml_plot_6)
 ggsave("./output/figs/bbdml_plot_all_sig_taxa.png",height = 6, width = 12)

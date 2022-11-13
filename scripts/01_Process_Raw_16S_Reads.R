@@ -34,7 +34,7 @@ library(patchwork); packageVersion("patchwork")
 
 # File parsing - 
 
-path <- "./data/filtN/" # CHANGE to the directory containing your demultiplexed fastq files when using your own data
+path <- "./data/filtN" # CHANGE to the directory containing your demultiplexed fastq files when using your own data
 filtpath <- file.path(path, "filtered") # Filtered files go into the filtered/ subdirectory
 if(!file_test("-d", filtpath)) dir.create(filtpath) # make directory for filtered fqs if not already present
 
@@ -136,7 +136,9 @@ if(identical(unlist(map(strsplit(basename(filts_f), "FWD_filt"), 1)),unlist(map(
 
 
 # SAMPLE INFERRENCE ####
+set.seed(123)
 dadaFs <- dada(derepF, err=errF, multithread=TRUE, selfConsist = TRUE, verbose=TRUE, pool = "pseudo") # set multithread = FALSE on Windows
+set.seed(123)
 dadaRs <- dada(derepR, err=errR, multithread=TRUE, selfConsist = TRUE, verbose=TRUE, pool = "pseudo") # set multithread = FALSE on Windows
 
 # MERGE FWD and REV READS ####

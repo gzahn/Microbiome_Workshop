@@ -38,6 +38,7 @@ seqs <- rownames(tax_table(ps))
 names(seqs) <- paste0("ASV_",1:length(seqs)) # This propagates to the tip labels of the tree
 
 # Multiple sequence alignment  ####
+set.seed(123)
 alignment <- msa(seqs,method = "Muscle", type = "dna",verbose = TRUE,order = "input",maxiters = 10)
 
 # save progress 
